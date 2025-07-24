@@ -60,14 +60,14 @@ export const login = async (req, res) => {
 
         const token = await genrateToken(user);
 
-
-        res.cookie("token", token, {
+        const cookieOption = {
             httpOnly: true,
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-            secure: process.env.NODE_ENV === "production",
             secure: true,
-            sameSite: "Lax",
-        })
+            sameSite: "None",
+            path: "/",
+        };
+
+        res.cookie("token",token,cookieOption);
 
         res.json({
             message: "Logged in successfully",
@@ -189,8 +189,8 @@ export const EditProfile = async (req, res) => {
             avatar,
             phonenumber: phone
         },
-        { new: true, runValidators: true }
-    )
+            { new: true, runValidators: true }
+        )
         if (!user) {
             return res.status(404).json({
                 message: "User not found",
