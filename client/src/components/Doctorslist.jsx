@@ -84,7 +84,7 @@ const DoctorsList = () => {
                             Book Appointment <br /> <span className=' mt-6'>With 100+ Trusted Doctors</span>
                         </h1>
                         {
-                            data.success ? (
+                            data?.success ? (
                                 <Link to={"/alldoctors/All"} className="mt-6 self-center rounded-full bg-white px-6 py-2 text-black transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#20B2AA] md:self-start">
                                     Book Appointment
                                 </Link>
