@@ -1,0 +1,179 @@
+import React, { useEffect, useState } from 'react';
+import { FiTrash2, FiXCircle } from "react-icons/fi";
+import { useMutation } from '@tanstack/react-query';
+import { getAllAppointments, cancelAppointment, deleteAppointment } from '../../utils/usersystem';
+import { toast } from 'react-toastify';
+
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md m-4">
+                <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+                <p className="mt-2 text-gray-600">{message}</p>
+                <div className="mt-6 flex justify-end gap-3">
+                    <button onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-medium">
+                        Go Back
+                    </button>
+                    <button onClick={onConfirm} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium">
+                        Confirm Deletion
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const AppointmentCard = ({ appointment, onCancel, onDelete }) => {
+    const formattedDate = new Date(appointment.date).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric'
+    });
+
+    const getStatusClasses = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'confirmed': case 'approved':
+                return 'bg-green-100 text-green-800';
+            case 'pending':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'cancelled':
+                return 'bg-red-100 text-red-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    return (
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200/80">
+            <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 p-3 border-r-0 md:border-r border-gray-200">
+                    <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">Patient</p>
+                    <div className="flex items-center gap-3">
+                        <img className="h-12 w-12 rounded-full object-cover" src={appointment.patient.avatar} alt={appointment.patient.name} />
+                        <div>
+                            <p className="font-semibold text-gray-900">{appointment.patient.name}</p>
+                            <p className="text-sm text-gray-600">{appointment.patient.phonenumber}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex-1 p-3">
+                    <p className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">Doctor</p>
+                    <div className="flex items-center gap-3">
+                        <img className="h-12 w-12 rounded-full object-cover" src={appointment.doctor.doctor.avatar} alt={appointment.doctor.doctor.name} />
+                        <div>
+                            <p className="font-semibold text-gray-900">{appointment.doctor.doctor.name}</p>
+                            <p className="text-sm text-gray-600">{appointment.doctor.specialisation}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="flex md:flex-col items-center md:items-end justify-between p-3 md:border-l border-t md:border-t-0 border-gray-200 gap-3">
+                    <button onClick={() => onCancel(appointment._id)} className="flex items-center gap-2 text-sm text-yellow-600 hover:text-yellow-800 font-medium">
+                        <FiXCircle/> Cancel
+                    </button>
+                    <button onClick={() => onDelete(appointment._id)} className="flex items-center gap-2 text-sm text-red-600 hover:text-red-800 font-medium">
+                        <FiTrash2/> Delete
+                    </button>
+                </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                 <div className="text-sm text-gray-700">
+                    <p className="font-semibold">{formattedDate} at {appointment.time}</p>
+                    <p>Fees: <span className="font-bold text-gray-900">Rs. {appointment.fees}</span></p>
+                </div>
+                <span className={`px-3 py-1 text-xs font-bold rounded-full capitalize ${getStatusClasses(appointment.status)}`}>
+                    {appointment.status}
+                </span>
+            </div>
+        </div>
+    );
+};
+
+const AllAppointments = () => {
+    const [appointments, setAppointments] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedId, setSelectedId] = useState(null);
+
+    const { mutate: fetchAppointments, isLoading } = useMutation({
+        mutationFn: getAllAppointments,
+        onSuccess: (data) => setAppointments(data || []),
+        onError: (error) => console.error("Error fetching appointments:", error),
+    });
+
+    const { mutate: cancelMutation } = useMutation({
+        mutationFn: cancelAppointment,
+        onSuccess: () => {
+            toast.success("Appointment cancelled");
+            fetchAppointments();
+        },
+        onError: (error) => toast.error(error.response?.data?.message || "Failed to cancel")
+    });
+
+    const { mutate: deleteMutation } = useMutation({
+        mutationFn: deleteAppointment,
+        onSuccess: () => {
+            toast.success("Appointment deleted successfully");
+            fetchAppointments();
+        },
+        onError: (error) => toast.error(error.response?.data?.message || "Failed to delete")
+    });
+    
+    useEffect(() => {
+        fetchAppointments();
+    }, [fetchAppointments]);
+
+    const handleOpenDeleteModal = (id) => {
+        setSelectedId(id);
+        setIsModalOpen(true);
+    };
+    
+    const handleConfirmDelete = () => {
+        if (selectedId) {
+            deleteMutation(selectedId);
+        }
+        setIsModalOpen(false);
+        setSelectedId(null);
+    };
+
+    if (isLoading) {
+        return (
+            <section className="p-4 md:p-6">
+                <h1 className='text-2xl font-bold text-gray-800 mb-4'>All Appointments</h1>
+                <div className="text-center p-10 text-gray-500">Loading...</div>
+            </section>
+        );
+    }
+
+    return (
+        <section className="p-4 md:p-6">
+            <h1 className='text-2xl font-bold text-gray-800 mb-4'>All Appointments</h1>
+            <div className="space-y-4">
+                {appointments.length > 0 ? (
+                    appointments.map((appointment) => (
+                        <AppointmentCard 
+                            key={appointment._id} 
+                            appointment={appointment} 
+                            onCancel={cancelMutation}
+                            onDelete={handleOpenDeleteModal}
+                        />
+                    ))
+                ) : (
+                    <div className="text-center p-10 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">No appointments found.</p>
+                    </div>
+                )}
+            </div>
+            <ConfirmationModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Appointment"
+                message="Are you sure you want to permanently delete this appointment? This action cannot be undone."
+            />
+        </section>
+    );
+};
+
+export default AllAppointments;
