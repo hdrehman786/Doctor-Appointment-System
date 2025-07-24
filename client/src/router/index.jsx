@@ -10,11 +10,11 @@ import Register from "../Pages/Register.jsx";
 import Login from "../Pages/Login.jsx";
 import MyAppointments from "../Pages/MyAppointments.jsx";
 import AllApoointments from "../Pages/Admin/AllApoointments.jsx";
-import MainDashboard from "../Pages/Admin/dashboard.jsx";
 import AllListedDoctors from "../Pages/Admin/AllDoctors.jsx";
 import AddDoctor from "../Pages/Admin/AddDoctor.jsx";
 import DoctorAppointments from "../Pages/DoctorAppointments.jsx";
 import Dashboard from "../Pages/Dashboard.jsx";
+import MainDashboard from "../Pages/Admin/dashboard.jsx";
 
 
 
