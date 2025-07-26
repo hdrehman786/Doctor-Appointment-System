@@ -150,3 +150,19 @@ export const deleteAppointment = async (appointmentId) => {
   });
   return res.data;
 };
+
+
+export const deleteDoctor = async (doctorId) => {
+  const res = await axios.delete(`${backendUrl}/doctor/delete-doctor/${doctorId}`, {
+    withCredentials: true
+  });
+  return res.data;
+}
+
+
+export const editDoctorProfile = async ({doctorId, doctorData}) => {
+  const res = await axios.put(`${backendUrl}/doctor/edit-doctor/${doctorId}`, doctorData, {
+    withCredentials: true
+  });
+  return res.data;
+}

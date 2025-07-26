@@ -1,3 +1,4 @@
+
 import Appointment from "../Modals/AppointmentModel.js";
 import Doctor from "../Modals/DoctorModel.js";
 import User from "../Modals/UserModel.js";
@@ -179,6 +180,89 @@ export const getDoctorAppointments = async (req, res) => {
       message: "Error fetching appointments",
       error: error.message,
       success: false
+    });
+  }
+};
+
+
+
+export const deleteDoctor = async (req, res) => {
+  const { id } = req.params;
+  try {
+    {
+      const doctor = await Doctor.findById(id);
+      if (!doctor) {
+        return res.status(404).json({ message: "Doctor not found" });
+      }
+      const appointments = await Appointment.find({ doctor: id });
+      if (appointments.length > 0) {
+        return res.status(400).json({
+          message: "Cannot delete doctor with existing appointments",
+          success: false,
+          error: true
+        });
+      }
+
+      const user = await User.findByIdAndUpdate(doctor.doctor, {
+        role: "Patient"
+      }, { new: true });
+
+      console.log(user);
+      const deletedDoctor = await Doctor.findByIdAndDelete(id);
+      res.status(200).json({
+        message: "Doctor deleted successfully",
+        success: true,
+        data: deletedDoctor
+      });
+    }
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message || error || "Something went wrong",
+      success: false,
+      error: true,
+    });
+  }
+
+}
+
+
+export const editDoctorProfile = async (req, res) => {
+  const { id } = req.params;
+  const {
+    specialisation, experience, fees, education, summary } = req.body;
+
+  try {
+    const doctor = await Doctor.findById(id);
+
+    if (!doctor) {
+      return res.status(404).json({
+        message: "Doctor not found",
+        success: false,
+        error: true,
+      });
+    }
+
+
+    doctor.specialisation = specialisation;
+    doctor.experience = experience;
+    doctor.fees = fees;
+    doctor.education = education;
+    doctor.summary = summary;
+
+    const updatedDoctor = await doctor.save();
+
+    res.json({
+      message: "Doctor profile updated successfully",
+      success: true,
+      data: updatedDoctor,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message || "Something went wrong",
+      success: false,
+      error: true,
     });
   }
 };
