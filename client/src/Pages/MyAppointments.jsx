@@ -7,9 +7,7 @@ import { toast } from 'react-toastify';
 import { useState } from 'react';
 
 const MyAppointments = () => {
-    const [appointments, setappointments] = useState([
-
-    ]);
+    const [appointments, setappointments] = useState([]);
 
     const mutaion = useMutation({
         mutationFn: getAppointment,
@@ -24,7 +22,7 @@ const MyAppointments = () => {
     useEffect(() => {
         mutaion.mutate();
     }, []);
-
+    
     const cancelappointment = useMutation({
         mutationFn: cancelAppointment,
         onSuccess: (data) => {
@@ -43,7 +41,7 @@ const MyAppointments = () => {
         return date.toLocaleDateString('en-US', options);
     }
 
-    if (appointments.length === 0) {
+    if (!appointments) {
         return (
             <section className='p-4 md:p-6'>
                 <h1 className='text-2xl font-semibold font-sans mb-4'>My Appointments</h1>
@@ -66,7 +64,7 @@ const MyAppointments = () => {
         <section className='p-4 md:p-6'>
             <h1 className='text-2xl font-semibold font-sans mb-4'>My Appointments</h1>
             <div className='border-y border-gray-200 divide-y divide-gray-200'>
-                {appointments.map((appointment) => (
+                {appointments?.map((appointment) => (
                     <div key={appointment._id} className='flex flex-col md:flex-row items-start md:items-center justify-between py-4 gap-4'>
 
                         <div className='flex gap-4 w-full'>
@@ -92,7 +90,8 @@ const MyAppointments = () => {
                                 {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                             </p>
 
-
+                            {
+                                appointment.status == "pending" && "approved" && (
                             <button
                                 onClick={() => cancelappointment.mutate(appointment._id)}
                                 className={`flex-1 md:flex-none border cursor-pointer py-2 px-6 rounded-md
@@ -100,6 +99,7 @@ const MyAppointments = () => {
                                 `}>
                                 Cancel appointment
                             </button>
+                            )}
                             {/* {
                                 appointment.status === 'pending' && "approved" ? (
 

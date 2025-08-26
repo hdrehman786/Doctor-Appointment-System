@@ -119,7 +119,7 @@ export const getprofile = async (req, res) => {
     try {
         const user = await User.findById(id).select("-password");
         if (!user) {
-            res.json({
+           return res.json({
                 message: "The user has not fined",
                 error: true,
                 success: false,

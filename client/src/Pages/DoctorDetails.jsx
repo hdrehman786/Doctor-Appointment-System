@@ -105,8 +105,13 @@ const DoctorDetails = () => {
     })
 
     const handleBookAppointment = () => {
+        if(!data?.data) {
+            toast.error("Please login to book an appointment.");
+            navigate("/login");
+            return;
+        }
         if (!selectedDate || !selectedTime || !params.id) {
-            alert('Please select a valid date and time.');
+            toast.info('Please select a valid date and time.');
             return;
         }
         const appointmentData = {

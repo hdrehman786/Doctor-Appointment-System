@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { getAppointmentsodoctor, cancelAppointment, approveAppointment } from '../utils/usersystem';
+import { getAppointmentsodoctor, cancelAppointment, approveAppointment, completeAppointment } from '../utils/usersystem';
 import { toast } from 'react-toastify';
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
@@ -55,6 +55,15 @@ const DoctorAppointments = () => {
             fetchAppointments();
         },
         onError: (error) => toast.error(error.response?.data?.message || "Failed to cancel"),
+    });
+
+    const { mutate: completeAppointmentMutation } = useMutation({
+        mutationFn: completeAppointment,
+        onSuccess: (data) => {
+            toast.success(data.message || "Appointment marked as completed");
+            fetchAppointments();
+        },
+        onError: (error) => toast.error(error.response?.data?.message || "Failed to complete"),
     });
 
     useEffect(() => {
@@ -140,13 +149,22 @@ const DoctorAppointments = () => {
                                 </p>
                             )}
 
-                            {appointment.status !== 'cancelled' && (
+                            {appointment.status !== 'cancelled'  && appointment.status !== "completed" && (
                                 <button
                                     onClick={() => handleOpenCancelModal(appointment._id)}
                                     className='w-full border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer py-2 px-4 rounded-md font-medium md:py-2.5 md:px-8 md:text-base'>
                                     Cancel
                                 </button>
                             )}
+                            {
+                                appointment.status === 'approved' && (
+                                    <button
+                                        onClick={() => completeAppointmentMutation(appointment._id)}
+                                        className='w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors md:py-2.5 md:px-8 md:text-base'>
+                                        Mark as Completed
+                                    </button>
+                                )
+                            }
                         </div>
                     </div>
                 ))}

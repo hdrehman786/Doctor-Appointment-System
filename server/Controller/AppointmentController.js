@@ -34,6 +34,7 @@ export const getAppointments = async (req, res) => {
                 path: "doctor",
             }
         }).populate("patient");
+        console.log("appointemes",appointments);
         res.status(200).json(appointments);
     } catch (error) {
         res.status(500).json({ message: "Error fetching appointments", error: error.message });
@@ -121,4 +122,34 @@ export const cancelAppointment = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Error cancelling appointment", error: error.message });
     }
+}
+
+
+export const completeAppointemen = async (req,res)=>{
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ message: "Appointment ID is required" });
+        }
+        const appointment = await Appointment.findByIdAndUpdate(id, { status: 'completed' }, { new: true });
+        if (!appointment) {
+            return res.status(404).json({ message: "Appointment not found" });
+        }
+        res.status(200).json({ message: "Appointment completed successfully", appointment });
+    } catch (error) {
+        res.status(500).json({ message: "Error completing appointment", error: error.message });
+    }
+}
+
+export const expiredAppointment = async (req,res)=>{
+  try {
+    const now = new Date();
+    const result = await Appointment.updateMany(
+      { date: { $lt: now }, status: { $in: ['pending', 'approved'] } },
+      { $set: { status: 'expired' } }
+    );
+    res.status(200).json({ message: "Expired appointments updated successfully", modifiedCount: result.nModified });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating expired appointments", error: error.message });
+  }
 }

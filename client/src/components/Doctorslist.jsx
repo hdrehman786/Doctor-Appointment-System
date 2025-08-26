@@ -99,7 +99,7 @@ const DoctorsList = () => {
                     <div className="w-full md:h-auto md:w-1/2">
                         <img
                             className="h-72 w-full object-contain object-bottom"
-                            src="https://thumbs.wbm.im/pw/medium/8aeabf339054d9ea57b17f9ca0a9e5d6.png"
+                            src="https://res.cloudinary.com/dyjpecyav/image/upload/v1756206838/docotr_wali_image_pnljan.png"
                             alt="Doctor Profile"
                         />
                     </div>

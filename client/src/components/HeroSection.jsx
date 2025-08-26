@@ -68,7 +68,7 @@ const Hero = () => {
         <div className=" h-full w-full flex items-center justify-center md:h-auto md:w-1/2">
           <img
             className=" h-full object-contain object-bottom"
-            src="https://thumbs.wbm.im/pw/medium/ec0fa8742cb05b725b159b6390b0d5de.png"
+            src="https://res.cloudinary.com/dyjpecyav/image/upload/v1756206943/doctor_wali_image_wvd9np.png"
             alt="Doctor Profile"
           />
         </div>

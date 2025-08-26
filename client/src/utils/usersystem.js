@@ -166,3 +166,22 @@ export const editDoctorProfile = async ({doctorId, doctorData}) => {
   });
   return res.data;
 }
+
+
+export const completeAppointment = async (appointmentId) => {
+  const res = await axios.put(`${backendUrl}/appointment/complete-appointment/${appointmentId}`, {}, {
+    withCredentials: true
+  });
+  return res.data;
+};
+
+export const setExpiredAppointments = async () => {
+  try {
+   const res = await axios.put(`${backendUrl}/appointment/expire-appointments`, {}, {
+      withCredentials: true
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Error setting expired appointments:", error);
+  }
+}
