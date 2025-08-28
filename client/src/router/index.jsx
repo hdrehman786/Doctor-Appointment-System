@@ -15,6 +15,7 @@ import AddDoctor from "../Pages/Admin/AddDoctor.jsx";
 import DoctorAppointments from "../Pages/DoctorAppointments.jsx";
 import Dashboard from "../Pages/Dashboard.jsx";
 import MainDashboard from "../Pages/Admin/MainDashboard.jsx";
+import DoctorTimeSlotManager from "../Pages/DoctorTimeSlotManager.jsx";
 
 
 
@@ -62,6 +63,10 @@ const router = createBrowserRouter([
             {
                 path : "/doctor-appointments",
                 element : <DoctorAppointments />
+            },
+            {
+                path : "/docotor-timeslots-manager",
+                element : <DoctorTimeSlotManager />
             },
             {
                 path : "/dashboard",

@@ -140,7 +140,6 @@ export const addManyDoctors = async (req, res) => {
 export const getDoctorAppointments = async (req, res) => {
   const id = req.userId;
 
-  console.log(id);
 
   if (!id) {
     return res.status(400).json({ message: "Doctor ID is required" });
@@ -266,3 +265,74 @@ export const editDoctorProfile = async (req, res) => {
     });
   }
 };
+
+
+
+export const addAppointmentDate = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { date, day, slots } = req.body;
+
+    if (!id || !date || !day || !slots) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
+    }
+
+    const doctor = await Doctor.findOne({
+      doctor : id 
+    });
+    if (!doctor) {
+      return res.status(404).json({
+        message: "Doctor not found against this ID",
+      });
+    }
+
+    doctor.appointment_date.push({ date, day, slots });
+    const savedDoctor = await doctor.save();
+
+    return res.status(200).json({
+      message: "Appointment date added successfully",
+      data: savedDoctor,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message || error,
+    });
+  }
+};
+
+
+export const getTimeSlots = async (req,res)=>{
+  try {
+    const id = req.userId;
+
+    if(!id){
+     return res.status(404).json({
+        message : "Id not found"
+      })
+    };
+
+    const doctor = await Doctor.findOne({
+      doctor : id
+    });
+
+    if(!doctor){
+     return res.json({
+        message : "The doctor not found"
+      })
+    };
+
+    res.json({
+      message : "Doctor data get successfully",
+      data : doctor
+    })
+    
+  } catch (error) {
+    res.status(500).json({
+      message : "The interval Server Error",
+      error: error
+    })
+  }
+}

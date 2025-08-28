@@ -185,3 +185,30 @@ export const setExpiredAppointments = async () => {
     console.error("Error setting expired appointments:", error);
   }
 }
+
+
+export const addTimeSlots = async ({id,doctorData})=>{
+  console.log("the data from time slots",id,doctorData);
+  try {
+    const res = await axios.put(`${backendUrl}/doctor/add-appointment-date/${id}`,doctorData[0],{
+      withCredentials : true
+    });
+    return res.data
+  } catch (error) {
+    console.log("The main Server error", error);
+    return error
+  }
+};
+
+
+export const getTimeSlots = async ()=>{
+  try {
+    const res = await axios.get(`${backendUrl}/doctor/get-timeslots`,{
+      withCredentials : true
+    });
+     return res.data
+  } catch (error) {
+    console.log("the error of something",error);
+    return error
+  }
+}

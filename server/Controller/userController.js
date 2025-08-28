@@ -89,28 +89,33 @@ export const login = async (req, res) => {
 
 
 
-export const verifyToken = async (req, res, next) => {
-    const token = req.cookies.token;
-    if (!token) {
-        res.json({
-            message: "Token has not found",
-            error: true,
-            success: false
-        })
-    }
-    try {
-        const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        req.userId = decoded.user._id;
-        next();
-    } catch (error) {
-        res.json({
-            message: error || error.message,
-            error: true,
-            success: false
-        })
-    }
 
-}
+
+export const verifyToken = async (req, res, next) => {
+  const token = req.cookies?.token;
+  console.log("token", token);
+
+  if (!token) {
+    return res.status(401).json({
+      message: "Token not found",
+      error: true,
+      success: false
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    req.userId = decoded.id;
+    next();
+  } catch (error) {
+    return res.status(403).json({
+      message: error.message || "Invalid token",
+      error: true,
+      success: false
+    });
+  }
+};
+
 
 
 

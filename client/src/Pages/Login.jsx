@@ -10,19 +10,17 @@ const Login = () => {
     password: '',
   });
   const navigate = useNavigate();
+
   const mutation = useMutation({
-    mutationFn : login,
-    onSuccess : (data)=>{
+    mutationFn: login,
+    onSuccess: (data) => {
       toast.success(data.message);
-      navigate("/")
+      navigate('/');
     },
-    onError : (error)=>{
-      console.log(error.response.data.msg)
-    }
-  })
-
-
-
+    onError: (error) => {
+      console.log(error.response?.data?.msg);
+    },
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,14 +32,16 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    mutation.mutate(formData)
+    mutation.mutate(formData);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100  p-4">
+      <div className="w-full max-w-md p-8 space-y-8 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Sign In</h1>
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+            Welcome Back
+          </h1>
           <p className="mt-2 text-gray-600">
             Log in to access your account and book appointments
           </p>
@@ -51,7 +51,7 @@ const Login = () => {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
+              className="block mb-1 text-sm font-semibold text-gray-700"
             >
               Email Address
             </label>
@@ -62,14 +62,15 @@ const Login = () => {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 mt-2 text-gray-800 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#20B2AA]"
+              className="w-full px-4 py-3 text-gray-800 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#20B2AA] focus:border-[#20B2AA] transition-all"
+              placeholder="Enter your email"
             />
           </div>
 
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+              className="block mb-1 text-sm font-semibold text-gray-700"
             >
               Password
             </label>
@@ -80,20 +81,25 @@ const Login = () => {
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 mt-2 text-gray-800 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#20B2AA]"
+              className="w-full px-4 py-3 text-gray-800 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#20B2AA] focus:border-[#20B2AA] transition-all"
+              placeholder="Enter your password"
             />
           </div>
 
-          <div>
-            <button
-              type="submit"
-              className="w-full px-4 py-3 font-semibold text-white transition-colors duration-300 bg-[#20B2AA] rounded-md hover:bg-[#0c8680] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0c8680]"
-            >
-              Sign In
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full py-3 font-semibold text-white rounded-lg shadow-md bg-gradient-to-r from-[#20B2AA] to-[#178d85] hover:from-[#178d85] hover:to-[#106f6a] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#20B2AA]"
+          >
+            {mutation.isPending ? "Signing in..." : "Sign In"}
+          </button>
         </form>
-        <span>Create a new account <Link to={"/register"} className=' text-[#20B2AA] '>Sign up</Link> </span>
+
+        <div className="text-center text-sm text-gray-700">
+          Don’t have an account?{" "}
+          <Link to="/register" className="font-semibold text-[#20B2AA] hover:underline">
+            Sign up
+          </Link>
+        </div>
       </div>
     </div>
   );

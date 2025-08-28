@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../utils/usersystem';
 import { toast } from 'react-toastify';
-
+import { FaUser, FaEnvelope, FaLock, FaStethoscope } from "react-icons/fa";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -12,8 +12,6 @@ const Register = () => {
     password: '',
   });
   const navigate = useNavigate();
-
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,87 +37,85 @@ const Register = () => {
     },
   });
 
-
   const handleSubmit = (e) => {
     e.preventDefault();
     mutation.mutate(formData);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Create an Account</h1>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+      <div className="w-full max-w-lg p-10 bg-white rounded-2xl shadow-xl">
+        
+        {/* Header */}
+        <div className="flex flex-col items-center text-center">
+          <div className="p-3 bg-[#20B2AA] rounded-full shadow-md">
+            <FaStethoscope className="text-white w-6 h-6" />
+          </div>
+          <h1 className="mt-4 text-3xl font-bold text-gray-900">Create Account</h1>
           <p className="mt-2 text-gray-600">
             Register account to book appointment
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-          <div>
-            <label
-              htmlFor="fullName"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Full Name
-            </label>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6" noValidate>
+          <div className="relative">
+            <FaUser className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
             <input
               id="name"
               name="name"
               type="text"
               value={formData.name}
               onChange={handleChange}
+              placeholder="Full Name"
               required
-              className="w-full px-4 py-2 mt-2 text-gray-800 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#20B2AA]"
+              className="w-full pl-10 pr-4 py-3 text-gray-800 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#20B2AA]"
             />
           </div>
 
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email Address
-            </label>
+          <div className="relative">
+            <FaEnvelope className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
             <input
               id="email"
               name="email"
               type="email"
               value={formData.email}
               onChange={handleChange}
+              placeholder="Email Address"
               required
-              className="w-full px-4 py-2 mt-2 text-gray-800 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#20B2AA]"
+              className="w-full pl-10 pr-4 py-3 text-gray-800 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#20B2AA]"
             />
           </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
+          <div className="relative">
+            <FaLock className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
             <input
               id="password"
               name="password"
               type="password"
               value={formData.password}
               onChange={handleChange}
+              placeholder="Password"
               required
-              className="w-full px-4 py-2 mt-2 text-gray-800 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#20B2AA]"
+              className="w-full pl-10 pr-4 py-3 text-gray-800 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#20B2AA]"
             />
           </div>
 
-          <div>
-            <button
-              type="submit"
-              className="w-full px-4 py-3 font-semibold text-white transition-colors duration-300 bg-[#20B2AA] rounded-md hover:bg-[#0c8680] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0c8680]"
-            >
-              Create Account
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full py-3 font-semibold text-white bg-[#20B2AA] rounded-lg hover:bg-[#0c8680] transition-all duration-300 shadow-md"
+          >
+            {mutation.isLoading ? "Creating Account..." : "Create Account"}
+          </button>
         </form>
-        <p>Already have an account <Link to={"/login"} className='my-3 mx-1 text-[#20B2AA]'>Login</Link></p>
+
+        {/* Footer */}
+        <p className="mt-6 text-center text-gray-600">
+          Already have an account?{" "}
+          <Link to="/login" className="font-semibold text-[#20B2AA] hover:underline">
+            Login
+          </Link>
+        </p>
       </div>
     </div>
   );
