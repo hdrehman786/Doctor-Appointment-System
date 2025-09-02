@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { getAppointmentsodoctor, cancelAppointment, approveAppointment, completeAppointment } from '../utils/usersystem';
 import { toast } from 'react-toastify';
+import { FaSpinner } from "react-icons/fa"; // Loader icon
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
     if (!isOpen) return null;
@@ -86,17 +87,18 @@ const DoctorAppointments = () => {
         }
         handleCloseModal();
     };
-    
+
     const formatAppointmentDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
+    // 🔹 Loader screen
     if (isLoading) {
         return (
-            <section className='p-4 md:p-6'>
-                <h1 className='text-2xl font-semibold font-sans mb-4'>Patient Appointments</h1>
-                <div className="text-center p-10 text-gray-500">Loading appointments...</div>
+            <section className='p-6 flex flex-col items-center justify-center h-[60vh]'>
+                <FaSpinner className="animate-spin text-5xl text-[#20B2AA]" />
+                <p className='mt-4 text-gray-600 font-medium'>Loading patient appointments...</p>
             </section>
         );
     }
