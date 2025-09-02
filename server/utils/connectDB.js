@@ -8,7 +8,7 @@ export const connectDB = async (req,res)=>{
         console.log("Database connected successfully")
         return connected
     } catch (error) {
-      res.json({
+     return res.json({
         message : "The Database is making problems",
         error : true,
         success : false

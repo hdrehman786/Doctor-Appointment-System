@@ -173,16 +173,19 @@ const Navbar = () => {
             My Appointments
           </Link>
 
-          <hr className="border-t border-gray-300" />
           {
             userRole === "Doctor" && (
-            <Link
-              to={userRole === "Doctor" ? "/docotor-timeslots-manager" : "/"}
-              className='py-2 px-4 text-center hover:bg-[#f0eee7] rounded-md font-medium transition duration-200'
-              onClick={() => setShow(false)}
-            >
-              My Time Slots
-            </Link>
+              <>
+               <hr className="border-t border-gray-300" />
+              
+              <Link
+                to={userRole === "Doctor" ? "/docotor-timeslots-manager" : "/"}
+                className='py-2 px-4 text-center hover:bg-[#f0eee7] rounded-md font-medium transition duration-200'
+                onClick={() => setShow(false)}
+              >
+                My Time Slots
+              </Link>
+              </>
             )
           }
 

@@ -13,7 +13,6 @@ function App() {
     {
       mutationFn: setExpiredAppointments,
       onSuccess: (data) => {
-        console.log("Expired appointments updated:", data);
       },
       onError: (error) => {
         console.error("Error updating expired appointments:", error);

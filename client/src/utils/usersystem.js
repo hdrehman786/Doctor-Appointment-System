@@ -188,9 +188,10 @@ export const setExpiredAppointments = async () => {
 
 
 export const addTimeSlots = async ({id,doctorData})=>{
-  console.log("the data from time slots",id,doctorData);
+   const index = doctorData.length - 1;
+   console.log("index of ",doctorData[0]);
   try {
-    const res = await axios.put(`${backendUrl}/doctor/add-appointment-date/${id}`,doctorData[0],{
+    const res = await axios.put(`${backendUrl}/doctor/add-appointment-date/${id}`,doctorData[index],{
       withCredentials : true
     });
     return res.data
@@ -210,5 +211,31 @@ export const getTimeSlots = async ()=>{
   } catch (error) {
     console.log("the error of something",error);
     return error
+  }
+}
+
+
+export const editTimeSlot = async ({id,slotData})=>{
+  try {
+    const res = await axios.put(`${backendUrl}/doctor/edit-timeslots/${id}`,slotData,{
+      withCredentials : true
+    });
+    return res
+  } catch (error) {
+    console.log("error from edit slots",error);
+    return error
+  }
+}
+
+export const deleteTimeSlot = async({ id,appointmentId})=>{
+  try {
+    
+    const res = await axios.put(`${backendUrl}/doctor/delete-timeslot/${id}`,{appointmentId},{
+      withCredentials : true
+    })
+    return res;
+  } catch (error) {
+    console.log("the errorroor",error);
+    return
   }
 }

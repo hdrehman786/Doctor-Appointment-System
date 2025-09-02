@@ -279,20 +279,27 @@ export const addAppointmentDate = async (req, res) => {
       });
     }
 
-    const doctor = await Doctor.findOne({
-      doctor : id 
-    });
+    const doctor = await Doctor.findOne({ doctor: id });
     if (!doctor) {
       return res.status(404).json({
         message: "Doctor not found against this ID",
       });
     }
 
-    doctor.appointment_date.push({ date, day, slots });
+    const existingDay = doctor.appointment_date.find((item) => item.day === day);
+
+    if (existingDay) {
+      return res.json({
+        message : "This day is already in your list"
+      })
+    } else {
+      doctor.appointment_date.push({ date, day, slots });
+    }
+
     const savedDoctor = await doctor.save();
 
     return res.status(200).json({
-      message: "Appointment date added successfully",
+      message: "Appointment date/slots updated successfully",
       data: savedDoctor,
     });
   } catch (error) {
@@ -304,13 +311,147 @@ export const addAppointmentDate = async (req, res) => {
 };
 
 
-export const getTimeSlots = async (req,res)=>{
+
+export const getTimeSlots = async (req, res) => {
   try {
     const id = req.userId;
 
-    if(!id){
-     return res.status(404).json({
-        message : "Id not found"
+    if (!id) {
+      return res.status(404).json({
+        message: "Id not found"
+      })
+    };
+
+    const doctor = await Doctor.findOne({
+      doctor: id
+    });
+
+    if (!doctor) {
+      return res.json({
+        message: "The doctor not found"
+      })
+    };
+
+    res.json({
+      message: "Doctor data get successfully",
+      data: doctor
+    })
+
+  } catch (error) {
+    res.status(500).json({
+      message: "The interval Server Error",
+      error: error
+    })
+  }
+}
+
+
+
+const deleteTimeSlots = async (req, res) => {
+  try {
+    const id = req.userId;
+    const { date, day, slotIndex } = req.body;
+
+    if (!id) {
+      return res.json({
+        message: "id is required to edit the slots"
+      })
+
+      const doctor = await Doctor.findOne({
+        doctor: id
+      });
+
+      if (!doctor) {
+        return res.json({
+          message: "The doctor has not found againts this id"
+        })
+      }
+
+
+    }
+  } catch (error) {
+    res.json({
+      message: "Interval server error",
+      error: error.message
+    })
+  }
+}
+
+
+export const editAppointmentDate = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { appointmentId, date, day, slots } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        message: "Doctor ID is required",
+      });
+    }
+
+    const doctor = await Doctor.findOne({ doctor: id });
+    if (!doctor) {
+      return res.status(404).json({
+        message: "Doctor not found against this ID",
+      });
+    }
+
+
+    const appointmentIndex = doctor.appointment_date.findIndex(
+      (item) => item._id.equals(appointmentId)
+    );
+
+    if (appointmentIndex === -1) {
+      return res.status(404).json({
+        message: "No appointment found for this day",
+      });
+    }
+
+    if (appointmentIndex !== -1) {
+      if (slots) {
+        doctor.appointment_date[appointmentIndex].slots = slots; // pura slots array replace
+      }
+      if (date) {
+        doctor.appointment_date[appointmentIndex].date = date;
+      }
+      if (day) {
+        doctor.appointment_date[appointmentIndex].day = day;
+      }
+      await doctor.save();
+    } else {
+      console.log("Appointment not found");
+    }
+
+
+ 
+
+    return res.status(200).json({
+      message: "Appointment updated successfully",
+      data: doctor.appointment_date,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message || error,
+    });
+  }
+};
+
+
+
+
+
+export const deleteAppointmentDate = async (req,res)=>{
+  try {
+    const { id } = req.params
+    const { appointmentId } = req.body;
+
+    console.log(id,appointmentId);
+
+    if(!id || !appointmentId){
+      return res.json({
+        message : "The id,s are required",
       })
     };
 
@@ -319,20 +460,28 @@ export const getTimeSlots = async (req,res)=>{
     });
 
     if(!doctor){
-     return res.json({
-        message : "The doctor not found"
+      return res.json({
+        message : "The doctor not founf againt this id"
       })
     };
 
+    const appointmentIndx = doctor.appointment_date.find((item)=>{
+      item._id=appointmentId
+    });
+
+    doctor.appointment_date.splice(appointmentIndx,1);
+
+    await doctor.save();
+
     res.json({
-      message : "Doctor data get successfully",
+      message : "The appointment date deleted successfully",
       data : doctor
     })
     
   } catch (error) {
-    res.status(500).json({
-      message : "The interval Server Error",
-      error: error
+    res.json({
+      message : "The interval server error please try again later",
+      error : error.message
     })
   }
 }

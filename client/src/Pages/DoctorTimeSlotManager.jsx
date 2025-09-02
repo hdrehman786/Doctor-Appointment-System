@@ -1,160 +1,166 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { FiPlus, FiEdit2, FiTrash2, FiClock, FiCalendar, FiSave } from "react-icons/fi"
-import { Button } from "../components/ui/Button"
-import { addTimeSlots, getTimeSlots, useUser } from "../utils/usersystem"
+import { FiPlus, FiTrash2, FiClock, FiCalendar, FiX } from "react-icons/fi"
+
+import { addTimeSlots, deleteTimeSlot, getTimeSlots, useUser } from "../utils/usersystem"
 import { useMutation } from "@tanstack/react-query"
+import { toast } from "react-toastify"
+import UpdateDayComponent from "../components/UpdateDayComponent"
+import { Button } from "../components/ui/Button"
+
 
 export default function DoctorTimeSlotManager() {
   const [appointments, setAppointments] = useState([])
-  const [showAddDay, setShowAddDay] = useState(false)
-  const [editingSlot, setEditingSlot] = useState(null)
-  const [newDay, setNewDay] = useState({ day: "", date: "" })
+  const [showModal, setShowModal] = useState(false)
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState(null)
+  const [newDay, setNewDay] = useState({ day: "", date: "", slots: [] })
   const [newSlot, setNewSlot] = useState({ startTime: "", endTime: "" })
 
-      const { data, isLoading, isError } = useUser();
-      const mutation = useMutation({
-        mutationFn : addTimeSlots,
-        onSuccess : (data)=>{
-          console.log("data from mine",data);
-        },
-        onError : (err)=>{
-          console.log("error from mine",err);
-        }
-      });
+  const { data, isLoading, isError } = useUser()
 
-      console.log(appointments);
+  const mutation = useMutation({
+    mutationFn: addTimeSlots,
+    onSuccess: (data) => {
+      toast.success(data.message)
+      getTimeslts()
+    },
+    onError: (err) => {
+      console.log("error from mine", err)
+    },
+  })
 
-      const mutationTimeSlots = useMutation({
-        mutationFn : getTimeSlots,
-        onSuccess : (data)=>{
-          setAppointments(data.data.appointment_date)
-        },
-        onError : (err)=>{
-          console.log("The error",err)
-        }
-      })
+  const mutationTimeSlots = useMutation({
+    mutationFn: getTimeSlots,
+    onSuccess: (data) => {
+      setAppointments(data.data.appointment_date)
+    },
+    onError: (err) => {
+      console.log("The error", err)
+    },
+  })
 
-      const getTimeslts = ()=>{
-        mutationTimeSlots.mutate();
-      }
-
-
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-
-  const addNewDay = () => {
-    if (newDay.day && newDay.date) {
-      setAppointments([...appointments, { ...newDay, slots: [] }])
-      setNewDay({ day: "", date: "" })
-      setShowAddDay(false)
+  const delMutaion = useMutation({
+    mutationFn : deleteTimeSlot,
+    onSuccess : (data)=>{
+      console.log(data);
+      toast.success(data.data.message);
+      getTimeslts();
+    },
+    onError : (error)=>{
+      console.log(error);
     }
+  })
+
+  const getTimeslts = () => {
+    mutationTimeSlots.mutate()
   }
 
+  const openAddDayModal = () => {
+    setShowModal(true)
+  }
 
-  const addSlot = (dayIndex) => {
+  const openUpdateModal = (appointment) => {
+    setSelectedAppointment(appointment)
+    setShowUpdateModal(true)
+  }
+
+  const closeModal = () => {
+    setShowModal(false)
+    setNewDay({ day: "", date: "", slots: [] })
+    setNewSlot({ startTime: "", endTime: "" })
+  }
+
+  const closeUpdateModal = () => {
+    setShowUpdateModal(false)
+    setSelectedAppointment(null)
+  }
+
+  const addSlotToNewDay = () => {
     if (newSlot.startTime && newSlot.endTime) {
-      const updatedAppointments = [...appointments]
-      updatedAppointments[dayIndex].slots.push({
-        ...newSlot,
-        isBooked: false,
+      setNewDay({
+        ...newDay,
+        slots: [...newDay.slots, { ...newSlot, isBooked: false }],
       })
-      setAppointments(updatedAppointments)
       setNewSlot({ startTime: "", endTime: "" })
     }
   }
 
-  const editSlot = (dayIndex, slotIndex, updatedSlot) => {
-    const updatedAppointments = [...appointments]
-    updatedAppointments[dayIndex].slots[slotIndex] = { ...updatedSlot, isBooked: false }
-    setAppointments(updatedAppointments)
-    setEditingSlot(null)
+  const removeSlotFromNewDay = (index) => {
+    const updatedSlots = newDay.slots.filter((_, i) => i !== index)
+    setNewDay({ ...newDay, slots: updatedSlots })
   }
 
-  const deleteSlot = (dayIndex, slotIndex) => {
-    const updatedAppointments = [...appointments]
-    updatedAppointments[dayIndex].slots.splice(slotIndex, 1)
-    setAppointments(updatedAppointments)
+  const addNewDay = () => {
+    if (newDay.date && newDay.slots.length > 0 && !isDateAlreadySelected(newDay.date)) {
+      const dayName = getDayNameFromDate(newDay.date)
+      const updatedAppointments = [...appointments, { day: dayName, date: newDay.date, slots: newDay.slots }]
+      setAppointments(updatedAppointments)
+
+      mutation.mutate({
+        id: data.data._id,
+        doctorData: updatedAppointments,
+      })
+
+      closeModal()
+    }
   }
 
   const deleteDay = (dayIndex) => {
-    const updatedAppointments = appointments.filter((_, index) => index !== dayIndex)
-    setAppointments(updatedAppointments)
-  }
-
-  const handleSave = () => {
-    mutation.mutate({
+    delMutaion.mutate({
       id : data.data._id,
-      doctorData: appointments
-    })
+      appointmentId : dayIndex
+    });
+    // const updatedAppointments = appointments.filter((_, index) => index !== dayIndex)
+    // setAppointments(updatedAppointments)
   }
 
-  useEffect(()=>{
-    getTimeslts();
-  },[])
+  const handleUpdateSuccess = () => {
+    getTimeslts()
+    closeUpdateModal()
+  }
+
+  useEffect(() => {
+    getTimeslts()
+  }, [])
+
+  const getDayNameFromDate = (dateString) => {
+    const date = new Date(dateString)
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    return days[date.getDay()]
+  }
+
+  const getMaxDate = () => {
+    const today = new Date()
+    const maxDate = new Date(today)
+    maxDate.setDate(today.getDate() + 3)
+    return maxDate.toISOString().split("T")[0]
+  }
+
+  const getTodayDate = () => {
+    return new Date().toISOString().split("T")[0]
+  }
+
+  const isDateAlreadySelected = (dateString) => {
+    return appointments.some((appointment) => appointment.date === dateString)
+  }
+
+  const simplifyDate = (appointmentdate) => {
+    const date = new Date(appointmentdate)
+    return date.toISOString().split("T")[0]
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Doctor Time Slot Manager</h1>
-        <Button onClick={handleSave} className="flex items-center gap-2">
-          <FiSave className="w-4 h-4" />
-          Save Changes
-        </Button>
-      </div>
-
-      {/* Add New Day Button */}
-      <div className="flex justify-end">
-        <Button onClick={() => setShowAddDay(true)} variant="outline" className="flex items-center gap-2">
+        <Button onClick={openAddDayModal} variant="outline" className="flex items-center gap-2 bg-transparent">
           <FiPlus className="w-4 h-4" />
           Add New Day
         </Button>
       </div>
 
-      {/* Add New Day Form */}
-      {showAddDay && (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Add New Day</h3>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Day</label>
-                <select
-                  value={newDay.day}
-                  onChange={(e) => setNewDay({ ...newDay, day: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                >
-                  <option value="">Select Day</option>
-                  {daysOfWeek.map((day) => (
-                    <option key={day} value={day}>
-                      {day}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Date</label>
-                <input
-                  type="date"
-                  value={newDay.date}
-                  onChange={(e) => setNewDay({ ...newDay, date: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                />
-              </div>
-              <div className="flex items-end gap-2">
-                <Button onClick={addNewDay}>Add Day</Button>
-                <Button variant="outline" onClick={() => setShowAddDay(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Appointment Days */}
       {appointments.map((appointment, dayIndex) => (
         <div key={dayIndex} className="bg-white border border-gray-200 rounded-lg shadow-sm">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -163,112 +169,50 @@ export default function DoctorTimeSlotManager() {
                 <FiCalendar className="w-5 h-5 text-blue-600" />
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900">{appointment.day}</h3>
-                  <p className="text-gray-600">{appointment.date}</p>
+                  <p className="text-gray-600">{simplifyDate(appointment.date)}</p>
                 </div>
               </div>
-              <Button variant="destructive" size="sm" onClick={() => deleteDay(dayIndex)}>
-                <FiTrash2 className="w-4 h-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => openUpdateModal(appointment)} variant="outline" size="sm">
+                  Edit Day
+                </Button>
+                <Button variant="destructive" size="sm" onClick={() => deleteDay(appointment._id)}>
+                  <FiTrash2 className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
-          <div className="p-6">
-            {/* Add New Slot Form */}
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-medium mb-3">Add New Time Slot</h4>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Start Time</label>
-                  <input
-                    type="time"
-                    value={newSlot.startTime}
-                    onChange={(e) => setNewSlot({ ...newSlot, startTime: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">End Time</label>
-                  <input
-                    type="time"
-                    value={newSlot.endTime}
-                    onChange={(e) => setNewSlot({ ...newSlot, endTime: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button onClick={() => addSlot(dayIndex)} className="w-full">
-                    <FiPlus className="w-4 h-4 mr-2" />
-                    Add Slot
-                  </Button>
-                </div>
-              </div>
-            </div>
 
-            {/* Time Slots */}
-            <div className="space-y-2">
-              {appointment.slots.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No time slots added yet</p>
-              ) : (
-                appointment.slots.map((slot, slotIndex) => (
-                  <div key={slotIndex} className="flex items-center justify-between p-3 bg-white border rounded-lg">
-                    {editingSlot?.dayIndex === dayIndex && editingSlot?.slotIndex === slotIndex ? (
-                      <div className="flex items-center gap-3 flex-1">
-                        <input
-                          type="time"
-                          defaultValue={slot.startTime}
-                          onChange={(e) => setEditingSlot({ ...editingSlot, startTime: e.target.value })}
-                          className="p-1 border border-gray-300 rounded"
-                        />
-                        <span>to</span>
-                        <input
-                          type="time"
-                          defaultValue={slot.endTime}
-                          onChange={(e) => setEditingSlot({ ...editingSlot, endTime: e.target.value })}
-                          className="p-1 border border-gray-300 rounded"
-                        />
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            editSlot(dayIndex, slotIndex, {
-                              startTime: editingSlot.startTime || slot.startTime,
-                              endTime: editingSlot.endTime || slot.endTime,
-                            })
-                          }
-                        >
-                          Save
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => setEditingSlot(null)}>
-                          Cancel
-                        </Button>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-3">
-                          <FiClock className="w-4 h-4 text-gray-500" />
-                          <span className="font-medium">
-                            {slot.startTime} - {slot.endTime}
-                          </span>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${
-                              slot.isBooked ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            {slot.isBooked ? "Booked" : "Available"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" onClick={() => setEditingSlot({ dayIndex, slotIndex })}>
-                            <FiEdit2 className="w-4 h-4" />
-                          </Button>
-                          <Button variant="destructive" size="sm" onClick={() => deleteSlot(dayIndex, slotIndex)}>
-                            <FiTrash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </>
-                    )}
+          <div className="p-6">
+            {appointment.slots.length === 0 ? (
+              <div className="text-center py-8">
+                <FiClock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-500">No time slots added yet</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {appointment.slots.map((slot, slotIndex) => (
+                  <div
+                    key={slotIndex}
+                    className="flex items-center justify-between p-3 bg-gray-50 border rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FiClock className="w-4 h-4 text-gray-500" />
+                      <span className="font-medium text-sm">
+                        {slot.startTime} - {slot.endTime}
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          slot.isBooked ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                        }`}
+                      >
+                        {slot.isBooked ? "Booked" : "Available"}
+                      </span>
+                    </div>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       ))}
@@ -279,12 +223,142 @@ export default function DoctorTimeSlotManager() {
             <FiCalendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No appointment days added</h3>
             <p className="text-gray-600 mb-4">Start by adding your first available day</p>
-            <Button onClick={() => setShowAddDay(true)}>
+            <Button onClick={openAddDayModal}>
               <FiPlus className="w-4 h-4 mr-2" />
               Add Your First Day
             </Button>
           </div>
         </div>
+      )}
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-semibold">Add New Day with Slots</h3>
+              <Button variant="outline" size="sm" onClick={closeModal} className="p-1 bg-transparent">
+                <FiX className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Date</label>
+                <input
+                  type="date"
+                  value={newDay.date}
+                  min={getTodayDate()}
+                  max={getMaxDate()}
+                  onChange={(e) => {
+                    const selectedDate = e.target.value
+                    const dayName = getDayNameFromDate(selectedDate)
+                    setNewDay({ ...newDay, day: dayName, date: selectedDate })
+                  }}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  You can only select dates for the next 4 days (including today)
+                </p>
+                {newDay.date && isDateAlreadySelected(newDay.date) && (
+                  <p className="text-xs text-red-500 mt-1">
+                    This date is already selected. Please choose a different date.
+                  </p>
+                )}
+              </div>
+
+              {newDay.date && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Selected Day</label>
+                  <div className="w-full p-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700">
+                    {getDayNameFromDate(newDay.date)}
+                  </div>
+                </div>
+              )}
+
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-medium mb-3">Add Time Slots</h4>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium mb-1">Start Time</label>
+                      <input
+                        type="time"
+                        value={newSlot.startTime}
+                        onChange={(e) => setNewSlot({ ...newSlot, startTime: e.target.value })}
+                        className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium mb-1">End Time</label>
+                      <input
+                        type="time"
+                        value={newSlot.endTime}
+                        onChange={(e) => setNewSlot({ ...newSlot, endTime: e.target.value })}
+                        className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={addSlotToNewDay}
+                    variant="outline"
+                    size="sm"
+                    className="w-full bg-transparent"
+                    disabled={!newSlot.startTime || !newSlot.endTime}
+                  >
+                    <FiPlus className="w-3 h-3 mr-1" />
+                    Add Slot
+                  </Button>
+                </div>
+              </div>
+
+              {newDay.slots.length > 0 && (
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium mb-3">Added Slots ({newDay.slots.length})</h4>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {newDay.slots.map((slot, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                        <span className="text-sm">
+                          {slot.startTime} - {slot.endTime}
+                        </span>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => removeSlotFromNewDay(index)}
+                          className="p-1 h-6 w-6"
+                        >
+                          <FiTrash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={addNewDay}
+                  className="flex-1"
+                  disabled={!newDay.date || newDay.slots.length === 0 || isDateAlreadySelected(newDay.date)}
+                >
+                  Add Day with Slots
+                </Button>
+                <Button variant="outline" onClick={closeModal} className="flex-1 bg-transparent">
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showUpdateModal && selectedAppointment && (
+        <UpdateDayComponent
+          appointment={selectedAppointment}
+          onClose={closeUpdateModal}
+          onSuccess={handleUpdateSuccess}
+          userId={data?.data?._id}
+          appointments={appointments}
+        />
       )}
     </div>
   )
