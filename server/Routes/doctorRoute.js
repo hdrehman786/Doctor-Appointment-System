@@ -17,5 +17,6 @@ doctorRoute.put("/edit-doctor/:id", verifyToken, editDoctorProfile);
 doctorRoute.put("/add-appointment-date/:id",addAppointmentDate);
 doctorRoute.get("/get-timeslots",verifyToken,getTimeSlots);
 doctorRoute.put("/edit-timeslots/:id",editAppointmentDate);
-doctorRoute.put("/delete-timeslot/:id",deleteAppointmentDate)
+doctorRoute.put("/delete-timeslot/:id",deleteAppointmentDate);
+
 export default doctorRoute;

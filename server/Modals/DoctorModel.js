@@ -1,10 +1,5 @@
 import mongoose from "mongoose";
 
-// const timeSlotSchema = new mongoose.Schema({
-//     startTime: { type: String, required: true },
-//     endTime: { type: String, required: true },
-//     isBooked: { type: Boolean, default: false },
-// });
 
 
 const dailySlotSchema = new mongoose.Schema({
@@ -14,7 +9,7 @@ const dailySlotSchema = new mongoose.Schema({
         _id : false,
         startTime : {type : String,required : true},
         endTime : {type : String, required : true},
-        isBooked : {type : Boolean, default : false}
+        isBooked : {type : Boolean, default : false},
     }],
 });
 

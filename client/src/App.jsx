@@ -8,21 +8,24 @@ import { useMutation } from "@tanstack/react-query";
 import { setExpiredAppointments } from "./utils/usersystem";
 import { useEffect } from "react";
 
+
 function App() {
-    const expiredFunctionSet = useMutation(
+  const expiredFunctionSet = useMutation(
     {
       mutationFn: setExpiredAppointments,
       onSuccess: (data) => {
       },
       onError: (error) => {
         console.error("Error updating expired appointments:", error);
+      }
     }
-  }
-    )
-  
-    useEffect(() => {
-      expiredFunctionSet.mutate();
-    }, []);
+  )
+
+
+
+  useEffect(() => {
+    expiredFunctionSet.mutate();
+  }, []);
   return (
     <div className="flex lg:container lg:mx-auto md:mx-auto md:container w-full p-2 flex-col px-8 ">
       <Navbar />

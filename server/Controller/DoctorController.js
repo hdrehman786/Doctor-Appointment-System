@@ -290,7 +290,7 @@ export const addAppointmentDate = async (req, res) => {
 
     if (existingDay) {
       return res.json({
-        message : "This day is already in your list"
+        message: "This day is already in your list"
       })
     } else {
       doctor.appointment_date.push({ date, day, slots });
@@ -424,7 +424,7 @@ export const editAppointmentDate = async (req, res) => {
     }
 
 
- 
+
 
     return res.status(200).json({
       message: "Appointment updated successfully",
@@ -442,46 +442,71 @@ export const editAppointmentDate = async (req, res) => {
 
 
 
-export const deleteAppointmentDate = async (req,res)=>{
+export const deleteAppointmentDate = async (req, res) => {
   try {
     const { id } = req.params
     const { appointmentId } = req.body;
 
-    console.log(id,appointmentId);
+    console.log(id, appointmentId);
 
-    if(!id || !appointmentId){
+    if (!id || !appointmentId) {
       return res.json({
-        message : "The id,s are required",
+        message: "The id,s are required",
       })
     };
 
     const doctor = await Doctor.findOne({
-      doctor : id
+      doctor: id
     });
 
-    if(!doctor){
+    if (!doctor) {
       return res.json({
-        message : "The doctor not founf againt this id"
+        message: "The doctor not founf againt this id"
       })
     };
 
-    const appointmentIndx = doctor.appointment_date.find((item)=>{
-      item._id=appointmentId
+    const appointmentIndx = doctor.appointment_date.find((item) => {
+      item._id = appointmentId
     });
 
-    doctor.appointment_date.splice(appointmentIndx,1);
+    doctor.appointment_date.splice(appointmentIndx, 1);
 
     await doctor.save();
 
     res.json({
-      message : "The appointment date deleted successfully",
-      data : doctor
+      message: "The appointment date deleted successfully",
+      data: doctor
     })
-    
+
   } catch (error) {
     res.json({
-      message : "The interval server error please try again later",
-      error : error.message
+      message: "The interval server error please try again later",
+      error: error.message
     })
   }
 }
+
+
+// export const expireTimeslts = async (req, res) => {
+//   try {
+//     const id = req.userId;
+//     if (!id) {
+//       return res.status(403).json({ message: "The id is required" });
+//     }
+//     const doctor = await Doctor.findOne({ doctor: id });
+
+//     const todayDate = new Date();
+
+//     doctor.appointment_date.forEach((item) => {
+//       const itemDate = new Date(item.date);
+//       if (todayDate > itemDate) {
+//         item.slots((slots)=>{
+
+//         })
+//       }
+//     })
+//     return res.json({ message: "Time slots expired successfully", data: doctor });
+//   } catch (error) {
+//     res.json({ message: "The interval server error please try again later", error: error.message })
+//   }
+// }
