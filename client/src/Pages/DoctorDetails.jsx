@@ -99,7 +99,7 @@ const DoctorDetails = () => {
     return src.map((d) => {
       const key = formatDateKey(d.date);
       return {
-        key, // YYYY-MM-DD
+        key : d._id,
         dayShort: d.day || toDayShort(d.date),
         dateNum: new Date(d.date).getDate(),
         rawDate: d.date,
@@ -107,6 +107,8 @@ const DoctorDetails = () => {
       };
     });
   }, [doctorData]);
+
+  console.log("appointmentsdate",doctorData?.appointment_date);
 
   // Set default selected date (first available day with at least one unbooked slot, else first day)
   useEffect(() => {
@@ -134,6 +136,8 @@ const DoctorDetails = () => {
       toast.error(error?.response?.data?.message || 'Error booking appointment');
     },
   });
+
+ 
 
   const handleBookAppointment = () => {
     if (!userWrap?.data) {

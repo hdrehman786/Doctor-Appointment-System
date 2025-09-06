@@ -1,29 +1,83 @@
+import { getTimeSlots } from "../../client/src/utils/usersystem.js";
 import Appointment from "../Modals/AppointmentModel.js";
+import Doctor from "../Modals/DoctorModel.js";
 
 
 
 
-export const addAppointment = async (req,res) => {
+export const addAppointment = async (req, res) => {
     const { doctor, date, time, fees } = req.body;
     const patient = req.userId;
+
+
+
     if (!doctor || !date || !time || !fees || !patient) {
         return res.status(400).json({ message: "All fields are required" });
     }
+
     try {
+
+        const doctorData = await Doctor.findById(doctor); // 👈 renamed
+
+        if (!doctorData) {
+            return res.status(404).json({ message: "Doctor not found" });
+        }
+
+        const appntId = doctorData.appointment_date.find((item) => item._id.toString() === date);
+
+
+        function convert(timeRange) {
+            const [start, end] = timeRange.split(" - ");
+            return {
+                startTime: new Date("1970/01/01 " + start).toTimeString().slice(0, 5),
+                endTime: new Date("1970/01/01 " + end).toTimeString().slice(0, 5),
+            };
+        }
+
+
+
+        // function isSame(slot1, slot2) {
+        //     return slot1.startTime === slot2.startTime && slot1.endTime === slot2.endTime;
+        // }
+
+        const incoming = convert(time);
+
+
+
+        const bookedSlot = appntId.slots.find((slot) => {
+            if (slot.startTime === incoming.startTime && slot.endTime === incoming.endTime) {
+                slot.isBooked = true;   // update slot
+                return true;            // return this slot
+            }
+            return false;
+        });
+
+
+        if(!bookedSlot){
+            return res.json({
+                message : "The slot has not found",
+            })
+        }
+
         const newAppointment = new Appointment({
-            doctor,
+            doctor: doctorData._id,
             patient,
-            date,
+            date : appntId.date,
             time,
-            fees
+            fees,
         });
 
         await newAppointment.save();
-        res.status(201).json({ message: "Appointment created successfully", appointment: newAppointment });
+        await doctorData.save();
+        res
+            .status(201)
+            .json({ message: "Appointment created successfully", newAppointment });
     } catch (error) {
+        console.error("Error creating appointment:", error);
         res.status(500).json({ message: "Error creating appointment", error: error.message });
     }
-}
+};
+
 
 
 export const getAppointments = async (req, res) => {
@@ -34,7 +88,7 @@ export const getAppointments = async (req, res) => {
                 path: "doctor",
             }
         }).populate("patient");
-        console.log("appointemes",appointments);
+        console.log("appointemes", appointments);
         res.status(200).json(appointments);
     } catch (error) {
         res.status(500).json({ message: "Error fetching appointments", error: error.message });
@@ -42,7 +96,7 @@ export const getAppointments = async (req, res) => {
 }
 
 export const getAppointmentById = async (req, res) => {
-    const  id  = req.userId;
+    const id = req.userId;
     if (!id) {
         return res.status(400).json({ message: "Appointment ID is required" });
     }
@@ -60,7 +114,7 @@ export const getAppointmentById = async (req, res) => {
         }
         res.status(200).json({
             message: "Appointment fetched successfully",
-            data : appointment,
+            data: appointment,
             error: false,
             success: true
         });
@@ -125,7 +179,7 @@ export const cancelAppointment = async (req, res) => {
 }
 
 
-export const completeAppointemen = async (req,res)=>{
+export const completeAppointemen = async (req, res) => {
     try {
         const { id } = req.params;
         if (!id) {
@@ -141,15 +195,15 @@ export const completeAppointemen = async (req,res)=>{
     }
 }
 
-export const expiredAppointment = async (req,res)=>{
-  try {
-    const now = new Date();
-    const result = await Appointment.updateMany(
-      { date: { $lt: now }, status: { $in: ['pending', 'approved'] } },
-      { $set: { status: 'expired' } }
-    );
-    res.status(200).json({ message: "Expired appointments updated successfully", modifiedCount: result.nModified });
-  } catch (error) {
-    res.status(500).json({ message: "Error updating expired appointments", error: error.message });
-  }
+export const expiredAppointment = async (req, res) => {
+    try {
+        const now = new Date();
+        const result = await Appointment.updateMany(
+            { date: { $lt: now }, status: { $in: ['pending', 'approved'] } },
+            { $set: { status: 'expired' } }
+        );
+        res.status(200).json({ message: "Expired appointments updated successfully", modifiedCount: result.nModified });
+    } catch (error) {
+        res.status(500).json({ message: "Error updating expired appointments", error: error.message });
+    }
 }
