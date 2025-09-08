@@ -7,7 +7,7 @@ import { ToastContainer } from "react-toastify";
 import { useMutation } from "@tanstack/react-query";
 import { setExpiredAppointments } from "./utils/usersystem";
 import { useEffect } from "react";
-
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 function App() {
   const expiredFunctionSet = useMutation(
@@ -34,6 +34,7 @@ function App() {
       </main>
       <Footer />
       <ToastContainer />
+      <ReactQueryDevtools initialIsOpen={false} />
     </div>
   );
 }
