@@ -1,12 +1,11 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
 import axios from "axios";
 
 export const backendUrl = "https://doctor-appointment-system-server-delta.vercel.app"
 // export const backendUrl = "http://localhost:3000"
 
 export const register = async (userdata) => {
-  console.log("userdata", userdata);
   const res = await axios.post(`${backendUrl}/user/register`, userdata, {
     withCredentials: true
   });
