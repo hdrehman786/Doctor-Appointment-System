@@ -1,4 +1,3 @@
-import { getTimeSlots } from "../../client/src/utils/usersystem.js";
 import Appointment from "../Modals/AppointmentModel.js";
 import Doctor from "../Modals/DoctorModel.js";
 
