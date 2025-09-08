@@ -2,6 +2,7 @@ import User from "../Modals/UserModel.js";
 import bcrypt from "bcryptjs";
 import genrateToken from "../utils/genratetoken.js";
 import jwt, { decode } from "jsonwebtoken";
+import Appointment from "../Modals/AppointmentModel.js";
 
 
 
@@ -67,7 +68,7 @@ export const login = async (req, res) => {
             path: "/",
         };
 
-        res.cookie("token",token,cookieOption);
+        res.cookie("token", token, cookieOption);
 
         res.json({
             message: "Logged in successfully",
@@ -92,27 +93,27 @@ export const login = async (req, res) => {
 
 
 export const verifyToken = async (req, res, next) => {
-  const token = req.cookies?.token;
+    const token = req.cookies?.token;
 
-  if (!token) {
-    return res.status(401).json({
-      message: "Token not found",
-      error: true,
-      success: false
-    });
-  }
+    if (!token) {
+        return res.status(401).json({
+            message: "Token not found",
+            error: true,
+            success: false
+        });
+    }
 
-  try {
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    req.userId = decoded.id;
-    next();
-  } catch (error) {
-    return res.status(403).json({
-      message: error.message || "Invalid token",
-      error: true,
-      success: false
-    });
-  }
+    try {
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        req.userId = decoded.id;
+        next();
+    } catch (error) {
+        return res.status(403).json({
+            message: error.message || "Invalid token",
+            error: true,
+            success: false
+        });
+    }
 };
 
 
@@ -123,7 +124,7 @@ export const getprofile = async (req, res) => {
     try {
         const user = await User.findById(id).select("-password");
         if (!user) {
-           return res.json({
+            return res.json({
                 message: "The user has not fined",
                 error: true,
                 success: false,
@@ -215,6 +216,38 @@ export const EditProfile = async (req, res) => {
             message: error.message || error,
             success: false,
             error: true
+        })
+    }
+}
+
+
+
+export const getAllData = async (req, res) => {
+    try {
+        const appointments = await Appointment.find().populate("patient");
+        const patient = await User.find({
+            role: "Patient"
+        }).countDocuments();
+        const doctors = await User.find({
+            role: "Doctor"
+        }).countDocuments();
+
+        if(!appointments || !patient || !doctors){
+            res.status(404).json({
+                message : "Not found all requirments"
+            })
+        };
+        const appointments_count = await Appointment.find().countDocuments();
+        res.json({
+            appointments : appointments,
+            patients : patient,
+            doctors : doctors,
+            appointments_count : appointments_count
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "interval server error",
+            error: error.message
         })
     }
 }

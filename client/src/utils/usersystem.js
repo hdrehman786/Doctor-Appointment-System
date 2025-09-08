@@ -54,6 +54,18 @@ export const editProfile = async (userdata) => {
   return res.data
 }
 
+export const getAllData = async()=>{
+  try {
+    const res = await axios.get(`${backendUrl}/user/get-all-data`,{},{
+      withCredentials : true
+    })
+    return res;
+  } catch (error) {
+    console.log(error);
+    return error.message
+  }
+}
+
 
 export const addDoctor = async (doctorData) => {
   const res = await axios.post(`${backendUrl}/doctor/add-doctor`, doctorData, {
@@ -238,3 +250,5 @@ export const deleteTimeSlot = async({ id,appointmentId})=>{
     return
   }
 }
+
+

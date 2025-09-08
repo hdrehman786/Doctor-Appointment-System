@@ -42,13 +42,13 @@ export default function DoctorTimeSlotManager() {
   })
 
   const delMutaion = useMutation({
-    mutationFn : deleteTimeSlot,
-    onSuccess : (data)=>{
+    mutationFn: deleteTimeSlot,
+    onSuccess: (data) => {
       console.log(data);
       toast.success(data.data.message);
       getTimeslts();
     },
-    onError : (error)=>{
+    onError: (error) => {
       console.log(error);
     }
   })
@@ -109,8 +109,8 @@ export default function DoctorTimeSlotManager() {
 
   const deleteDay = (dayIndex) => {
     delMutaion.mutate({
-      id : data.data._id,
-      appointmentId : dayIndex
+      id: data.data._id,
+      appointmentId: dayIndex
     });
     // const updatedAppointments = appointments.filter((_, index) => index !== dayIndex)
     // setAppointments(updatedAppointments)
@@ -153,9 +153,14 @@ export default function DoctorTimeSlotManager() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <h1 className="text-3xl font-bold text-gray-900">Doctor Time Slot Manager</h1>
-        <Button onClick={openAddDayModal} variant="outline" className="flex items-center gap-2 bg-transparent">
+        <Button
+          onClick={openAddDayModal}
+          variant="outline"
+          className="flex items-center gap-2 bg-transparent w-full sm:w-auto"
+        >
           <FiPlus className="w-4 h-4" />
           Add New Day
         </Button>
@@ -163,8 +168,9 @@ export default function DoctorTimeSlotManager() {
 
       {appointments.map((appointment, dayIndex) => (
         <div key={dayIndex} className="bg-white border border-gray-200 rounded-lg shadow-sm">
+          {/* Day Header */}
           <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-3">
                 <FiCalendar className="w-5 h-5 text-blue-600" />
                 <div>
@@ -172,17 +178,28 @@ export default function DoctorTimeSlotManager() {
                   <p className="text-gray-600">{simplifyDate(appointment.date)}</p>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={() => openUpdateModal(appointment)} variant="outline" size="sm">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Button
+                  onClick={() => openUpdateModal(appointment)}
+                  variant="outline"
+                  size="sm"
+                  className="w-full sm:w-auto"
+                >
                   Edit Day
                 </Button>
-                <Button variant="destructive" size="sm" onClick={() => deleteDay(appointment._id)}>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => deleteDay(appointment._id)}
+                  className="w-full sm:w-auto"
+                >
                   <FiTrash2 className="w-4 h-4" />
                 </Button>
               </div>
             </div>
           </div>
 
+          {/* Slots Grid */}
           <div className="p-6">
             {appointment.slots.length === 0 ? (
               <div className="text-center py-8">
@@ -190,7 +207,7 @@ export default function DoctorTimeSlotManager() {
                 <p className="text-gray-500">No time slots added yet</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {appointment.slots.map((slot, slotIndex) => (
                   <div
                     key={slotIndex}
@@ -202,9 +219,10 @@ export default function DoctorTimeSlotManager() {
                         {slot.startTime} - {slot.endTime}
                       </span>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          slot.isBooked ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                        }`}
+                        className={`px-2 py-1 rounded-full text-xs ${slot.isBooked
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                          }`}
                       >
                         {slot.isBooked ? "Booked" : "Available"}
                       </span>
@@ -217,31 +235,24 @@ export default function DoctorTimeSlotManager() {
         </div>
       ))}
 
-      {appointments.length === 0 && (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-          <div className="p-12 text-center">
-            <FiCalendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No appointment days added</h3>
-            <p className="text-gray-600 mb-4">Start by adding your first available day</p>
-            <Button onClick={openAddDayModal}>
-              <FiPlus className="w-4 h-4 mr-2" />
-              Add Your First Day
-            </Button>
-          </div>
-        </div>
-      )}
-
+      {/* Modal: Add new day with slots */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
               <h3 className="text-lg font-semibold">Add New Day with Slots</h3>
-              <Button variant="outline" size="sm" onClick={closeModal} className="p-1 bg-transparent">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={closeModal}
+                className="p-1 bg-transparent"
+              >
                 <FiX className="w-4 h-4" />
               </Button>
             </div>
 
             <div className="p-6 space-y-4">
+              {/* Date Picker */}
               <div>
                 <label className="block text-sm font-medium mb-2">Date</label>
                 <input
@@ -275,16 +286,19 @@ export default function DoctorTimeSlotManager() {
                 </div>
               )}
 
+              {/* Time Inputs */}
               <div className="border-t pt-4">
                 <h4 className="text-sm font-medium mb-3">Add Time Slots</h4>
                 <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium mb-1">Start Time</label>
                       <input
                         type="time"
                         value={newSlot.startTime}
-                        onChange={(e) => setNewSlot({ ...newSlot, startTime: e.target.value })}
+                        onChange={(e) =>
+                          setNewSlot({ ...newSlot, startTime: e.target.value })
+                        }
                         className="w-full p-2 border border-gray-300 rounded-md text-sm"
                       />
                     </div>
@@ -293,7 +307,9 @@ export default function DoctorTimeSlotManager() {
                       <input
                         type="time"
                         value={newSlot.endTime}
-                        onChange={(e) => setNewSlot({ ...newSlot, endTime: e.target.value })}
+                        onChange={(e) =>
+                          setNewSlot({ ...newSlot, endTime: e.target.value })
+                        }
                         className="w-full p-2 border border-gray-300 rounded-md text-sm"
                       />
                     </div>
@@ -311,12 +327,18 @@ export default function DoctorTimeSlotManager() {
                 </div>
               </div>
 
+              {/* Added Slots Preview */}
               {newDay.slots.length > 0 && (
                 <div className="border-t pt-4">
-                  <h4 className="text-sm font-medium mb-3">Added Slots ({newDay.slots.length})</h4>
+                  <h4 className="text-sm font-medium mb-3">
+                    Added Slots ({newDay.slots.length})
+                  </h4>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {newDay.slots.map((slot, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2 bg-gray-50 rounded-md"
+                      >
                         <span className="text-sm">
                           {slot.startTime} - {slot.endTime}
                         </span>
@@ -334,31 +356,29 @@ export default function DoctorTimeSlotManager() {
                 </div>
               )}
 
+              {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
                 <Button
                   onClick={addNewDay}
                   className="flex-1"
-                  disabled={!newDay.date || newDay.slots.length === 0 || isDateAlreadySelected(newDay.date)}
+                  disabled={
+                    !newDay.date || newDay.slots.length === 0 || isDateAlreadySelected(newDay.date)
+                  }
                 >
                   Add Day with Slots
                 </Button>
-                <Button variant="outline" onClick={closeModal} className="flex-1 bg-transparent">
+                <Button
+                  variant="outline"
+                  onClick={closeModal}
+                  className="flex-1 bg-transparent"
+                >
                   Cancel
                 </Button>
               </div>
             </div>
           </div>
         </div>
-      )}
 
-      {showUpdateModal && selectedAppointment && (
-        <UpdateDayComponent
-          appointment={selectedAppointment}
-          onClose={closeUpdateModal}
-          onSuccess={handleUpdateSuccess}
-          userId={data?.data?._id}
-          appointments={appointments}
-        />
       )}
     </div>
   )
