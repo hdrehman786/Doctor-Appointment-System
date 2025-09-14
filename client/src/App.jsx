@@ -5,7 +5,7 @@ import Hero from "./components/HeroSection";
 import Navbar from "./components/Navbar";
 import { ToastContainer } from "react-toastify";
 import { useMutation } from "@tanstack/react-query";
-import { setExpiredAppointments } from "./utils/usersystem";
+import { expireOutDate, setExpiredAppointments } from "./utils/usersystem";
 import { useEffect } from "react";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
@@ -21,10 +21,21 @@ function App() {
     }
   )
 
+  const expireOutDatedFunction = useMutation({
+    mutationFn:expireOutDate,
+    onSuccess:(data)=>{
+      console.log(data)
+    },
+    onError : (error)=>{
+      console.log(error)
+    }
+  })
+
 
 
   useEffect(() => {
     expiredFunctionSet.mutate();
+    expireOutDatedFunction.mutate();
   }, []);
   return (
     <div className="flex lg:container lg:mx-auto md:mx-auto md:container w-full p-2 flex-col px-8 ">

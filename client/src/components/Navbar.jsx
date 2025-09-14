@@ -70,7 +70,7 @@ const Navbar = () => {
       setisLogin(false);
       setShow(false);
       setUserData(null);
-      navigate('/');
+      window.location.href="/";
     },
     onError: (error) => {
       toast.error(error.message)

@@ -206,7 +206,6 @@ export const deleteDoctor = async (req, res) => {
         role: "Patient"
       }, { new: true });
 
-      console.log(user);
       const deletedDoctor = await Doctor.findByIdAndDelete(id);
       res.status(200).json({
         message: "Doctor deleted successfully",
@@ -447,8 +446,6 @@ export const deleteAppointmentDate = async (req, res) => {
     const { id } = req.params
     const { appointmentId } = req.body;
 
-    console.log(id, appointmentId);
-
     if (!id || !appointmentId) {
       return res.json({
         message: "The id,s are required",
@@ -487,26 +484,40 @@ export const deleteAppointmentDate = async (req, res) => {
 }
 
 
-// export const expireTimeslts = async (req, res) => {
-//   try {
-//     const id = req.userId;
-//     if (!id) {
-//       return res.status(403).json({ message: "The id is required" });
-//     }
-//     const doctor = await Doctor.findOne({ doctor: id });
+export const expireTimeslts = async (req, res) => {
+  try {
+    const id = req.userId;
+    if (!id) {
+      return res.status(403).json({ message: "The id is required" });
+    }
+    
+    const doctor = await Doctor.findOne({ doctor: id });
+    
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
 
-//     const todayDate = new Date();
+    const todayDate = new Date();
 
-//     doctor.appointment_date.forEach((item) => {
-//       const itemDate = new Date(item.date);
-//       if (todayDate > itemDate) {
-//         item.slots((slots)=>{
+    // Filter out expired slots
+    doctor.appointment_date = doctor.appointment_date.filter((item) => {
+      const itemDate = new Date(item.date);
+      return itemDate >= todayDate; // keep only future slots
+    });
 
-//         })
-//       }
-//     })
-//     return res.json({ message: "Time slots expired successfully", data: doctor });
-//   } catch (error) {
-//     res.json({ message: "The interval server error please try again later", error: error.message })
-//   }
-// }
+    // Save updated doctor data
+    await doctor.save();
+
+    return res.json({
+      message: "Time slots expired successfully",
+      data: doctor
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error, please try again later",
+      error: error.message
+    });
+  }
+};
+

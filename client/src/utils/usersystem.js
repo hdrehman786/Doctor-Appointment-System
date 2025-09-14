@@ -54,10 +54,10 @@ export const editProfile = async (userdata) => {
   return res.data
 }
 
-export const getAllData = async()=>{
+export const getAllData = async () => {
   try {
-    const res = await axios.get(`${backendUrl}/user/get-all-data`,{},{
-      withCredentials : true
+    const res = await axios.get(`${backendUrl}/user/get-all-data`, {}, {
+      withCredentials: true
     })
     return res;
   } catch (error) {
@@ -171,7 +171,7 @@ export const deleteDoctor = async (doctorId) => {
 }
 
 
-export const editDoctorProfile = async ({doctorId, doctorData}) => {
+export const editDoctorProfile = async ({ doctorId, doctorData }) => {
   const res = await axios.put(`${backendUrl}/doctor/edit-doctor/${doctorId}`, doctorData, {
     withCredentials: true
   });
@@ -188,7 +188,7 @@ export const completeAppointment = async (appointmentId) => {
 
 export const setExpiredAppointments = async () => {
   try {
-   const res = await axios.put(`${backendUrl}/appointment/expire-appointments`, {}, {
+    const res = await axios.put(`${backendUrl}/appointment/expire-appointments`, {}, {
       withCredentials: true
     });
     return res.data;
@@ -198,12 +198,12 @@ export const setExpiredAppointments = async () => {
 }
 
 
-export const addTimeSlots = async ({id,doctorData})=>{
-   const index = doctorData.length - 1;
-   console.log("index of ",doctorData[0]);
+export const addTimeSlots = async ({ id, doctorData }) => {
+  const index = doctorData.length - 1;
+  console.log("index of ", doctorData[0]);
   try {
-    const res = await axios.put(`${backendUrl}/doctor/add-appointment-date/${id}`,doctorData[index],{
-      withCredentials : true
+    const res = await axios.put(`${backendUrl}/doctor/add-appointment-date/${id}`, doctorData[index], {
+      withCredentials: true
     });
     return res.data
   } catch (error) {
@@ -213,41 +213,53 @@ export const addTimeSlots = async ({id,doctorData})=>{
 };
 
 
-export const getTimeSlots = async ()=>{
+export const getTimeSlots = async () => {
   try {
-    const res = await axios.get(`${backendUrl}/doctor/get-timeslots`,{
-      withCredentials : true
+    const res = await axios.get(`${backendUrl}/doctor/get-timeslots`, {
+      withCredentials: true
     });
-     return res.data
+    return res.data
   } catch (error) {
-    console.log("the error of something",error);
+    console.log("the error of something", error);
     return error
   }
 }
 
 
-export const editTimeSlot = async ({id,slotData})=>{
+export const editTimeSlot = async ({ id, slotData }) => {
   try {
-    const res = await axios.put(`${backendUrl}/doctor/edit-timeslots/${id}`,slotData,{
-      withCredentials : true
+    const res = await axios.put(`${backendUrl}/doctor/edit-timeslots/${id}`, slotData, {
+      withCredentials: true
     });
     return res
   } catch (error) {
-    console.log("error from edit slots",error);
+    console.log("error from edit slots", error);
     return error
   }
 }
 
-export const deleteTimeSlot = async({ id,appointmentId})=>{
+export const deleteTimeSlot = async ({ id, appointmentId }) => {
   try {
-    
-    const res = await axios.put(`${backendUrl}/doctor/delete-timeslot/${id}`,{appointmentId},{
-      withCredentials : true
+
+    const res = await axios.put(`${backendUrl}/doctor/delete-timeslot/${id}`, { appointmentId }, {
+      withCredentials: true
     })
     return res;
   } catch (error) {
-    console.log("the errorroor",error);
+    console.log("the errorroor", error);
     return
+  }
+}
+
+export const expireOutDate = async () => {
+  try {
+
+    const res = await axios.put(`${backendUrl}/doctor/expire-out-date`,{}, {
+      withCredentials: true
+    })
+    return res;
+  } catch (error) {
+    return error
   }
 }
 

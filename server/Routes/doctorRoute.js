@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addAppointmentDate, addDoctor, addManyDoctors, deleteAppointmentDate, deleteDoctor, editAppointmentDate, editDoctorProfile, getDoctorAppointments, getDoctorProfile, getDoctorProfileById, getTimeSlots } from "../Controller/DoctorController.js";
+import { addAppointmentDate, addDoctor, addManyDoctors, deleteAppointmentDate, deleteDoctor, editAppointmentDate, editDoctorProfile, expireTimeslts, getDoctorAppointments, getDoctorProfile, getDoctorProfileById, getTimeSlots } from "../Controller/DoctorController.js";
 import { verifyToken } from "../Controller/userController.js";
 
 const doctorRoute = Router();
@@ -18,5 +18,7 @@ doctorRoute.put("/add-appointment-date/:id",addAppointmentDate);
 doctorRoute.get("/get-timeslots",verifyToken,getTimeSlots);
 doctorRoute.put("/edit-timeslots/:id",editAppointmentDate);
 doctorRoute.put("/delete-timeslot/:id",deleteAppointmentDate);
+doctorRoute.put("/expire-out-date",verifyToken,expireTimeslts);
+
 
 export default doctorRoute;

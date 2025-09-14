@@ -93,28 +93,37 @@ export const login = async (req, res) => {
 
 
 export const verifyToken = async (req, res, next) => {
-    const token = req.cookies?.token;
-
-    if (!token) {
-        return res.status(401).json({
-            message: "Token not found",
-            error: true,
-            success: false
-        });
-    }
-
     try {
+        const token = req.cookies?.token || req.headers["authorization"]?.split(" ")[1];
+        if (!token) {
+            return res.status(401).json({
+                message: "Access denied. No token provided.",
+                error: true,
+                success: false
+            });
+        }
+
+        // 2️⃣ Verify token
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
+
+        // 3️⃣ Attach userId to request
         req.userId = decoded.id;
-        next();
+
+        next(); // ✅ Continue
     } catch (error) {
+        // 4️⃣ Handle different JWT errors
+        let msg = "Invalid token";
+        if (error.name === "TokenExpiredError") msg = "Token expired, please login again.";
+        if (error.name === "JsonWebTokenError") msg = "Malformed token.";
+
         return res.status(403).json({
-            message: error.message || "Invalid token",
+            message: msg,
             error: true,
             success: false
         });
     }
 };
+
 
 
 
@@ -232,17 +241,17 @@ export const getAllData = async (req, res) => {
             role: "Doctor"
         }).countDocuments();
 
-        if(!appointments || !patient || !doctors){
+        if (!appointments || !patient || !doctors) {
             res.status(404).json({
-                message : "Not found all requirments"
+                message: "Not found all requirments"
             })
         };
         const appointments_count = await Appointment.find().countDocuments();
         res.json({
-            appointments : appointments,
-            patients : patient,
-            doctors : doctors,
-            appointments_count : appointments_count
+            appointments: appointments,
+            patients: patient,
+            doctors: doctors,
+            appointments_count: appointments_count
         })
     } catch (error) {
         res.status(500).json({
