@@ -48,45 +48,44 @@ export const login = async (req, res) => {
     if (!email || !password) {
         return res.status(400).json({ msg: "Please fill in all fields" });
     }
+
     try {
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ msg: "Invalid credentials" });
         }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ msg: "Invalid credentials" });
         }
 
-
         const token = await genrateToken(user);
 
-        const cookieOption = {
+        // ✅ consistent cookie options
+        const cookieOptions = {
             httpOnly: true,
-            secure: true,
-            sameSite: "None",
-            path: "/",
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "None",   // important for cross-site
+            path: "/",          // must match on logout
         };
 
-        res.cookie("token", token, cookieOption);
+        res.cookie("token", token, cookieOptions);
 
         res.json({
             message: "Logged in successfully",
             error: false,
             success: true,
-            data: user
-        })
-
-
+            data: user,
+        });
     } catch (error) {
-        res.json({
-            message: error.message || error,
+        res.status(500).json({
+            message: error.message || "Something went wrong during login",
             success: false,
-            error: true
-        })
+            error: true,
+        });
     }
-
-}
+};
 
 
 
@@ -158,10 +157,12 @@ export const getprofile = async (req, res) => {
 
 export const Logout = async (req, res) => {
     try {
+        // ✅ use the exact same options as login
         res.clearCookie("token", {
             httpOnly: true,
-            sameSite: "strict",
             secure: process.env.NODE_ENV === "production",
+            sameSite: "None",
+            path: "/",   // must match
         });
 
         return res.status(200).json({
@@ -169,7 +170,6 @@ export const Logout = async (req, res) => {
             error: false,
             success: true,
         });
-
     } catch (error) {
         return res.status(500).json({
             message: error.message || "Something went wrong during logout",
@@ -178,6 +178,7 @@ export const Logout = async (req, res) => {
         });
     }
 };
+
 
 
 
