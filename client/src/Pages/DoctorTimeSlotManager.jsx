@@ -2,59 +2,94 @@
 
 import { useEffect, useState } from "react"
 import { FiPlus, FiTrash2, FiClock, FiCalendar, FiX } from "react-icons/fi"
-
-import { addTimeSlots, deleteTimeSlot, getTimeSlots, useUser } from "../utils/usersystem"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "react-toastify"
+
+import { addTimeSlots, deleteTimeSlot, getTimeSlots, useUser } from "../utils/usersystem"
 import UpdateDayComponent from "../components/UpdateDayComponent"
 import { Button } from "../components/ui/Button"
-
 
 export default function DoctorTimeSlotManager() {
   const [appointments, setAppointments] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState(null)
-  const [newDay, setNewDay] = useState({ day: "", date: "", slots: [] })
-  const [newSlot, setNewSlot] = useState({ startTime: "", endTime: "" })
+  const [newDay, setNewDay] = useState({
+    day: "",
+    date: "",
+    slots: [],
+  })
+  const [newSlot, setNewSlot] = useState({
+    startTime: "",
+    endTime: "",
+  })
 
   const { data, isLoading, isError } = useUser()
 
-  const mutation = useMutation({
-    mutationFn: addTimeSlots,
-    onSuccess: (data) => {
-      toast.success(data.message)
-      getTimeslts()
-    },
-    onError: (err) => {
-      console.log("error from mine", err)
-    },
-  })
-
-  const mutationTimeSlots = useMutation({
+  const getTimeSlotsMutation = useMutation({
     mutationFn: getTimeSlots,
     onSuccess: (data) => {
       setAppointments(data.data.appointment_date)
     },
     onError: (err) => {
-      console.log("The error", err)
+      console.log("error from getTimeSlots", err)
+      toast.error("Failed to fetch time slots")
     },
   })
 
-  const delMutaion = useMutation({
+  const fetchTimeSlots = () => {
+    getTimeSlotsMutation.mutate()
+  }
+
+  const addTimeSlotsMutation = useMutation({
+    mutationFn: addTimeSlots,
+    onSuccess: (data) => {
+      toast.success(data.message)
+      fetchTimeSlots()
+    },
+    onError: (err) => {
+      console.log("error from addTimeSlots", err)
+      toast.error(err.message || "Failed to add time slots")
+    },
+  })
+
+  const deleteTimeSlotMutation = useMutation({
     mutationFn: deleteTimeSlot,
     onSuccess: (data) => {
-      console.log(data);
-      toast.success(data.data.message);
-      getTimeslts();
+      console.log(data)
+      toast.success(data.data.message)
+      fetchTimeSlots()
     },
     onError: (error) => {
-      console.log(error);
-    }
+      console.log("error from deleteTimeSlot", error)
+      toast.error("Failed to delete time slot")
+    },
   })
 
-  const getTimeslts = () => {
-    mutationTimeSlots.mutate()
+  const getDayNameFromDate = (dateString) => {
+    const date = new Date(dateString)
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    return days[date.getDay()]
+  }
+
+  const getMaxDate = () => {
+    const today = new Date()
+    const maxDate = new Date(today)
+    maxDate.setDate(today.getDate() + 3)
+    return maxDate.toISOString().split("T")[0]
+  }
+
+  const getTodayDate = () => {
+    return new Date().toISOString().split("T")[0]
+  }
+
+  const isDateAlreadySelected = (dateString) => {
+    return appointments.some((appointment) => appointment.date === dateString)
+  }
+
+  const simplifyDate = (appointmentdate) => {
+    const date = new Date(appointmentdate)
+    return date.toISOString().split("T")[0]
   }
 
   const openAddDayModal = () => {
@@ -98,7 +133,7 @@ export default function DoctorTimeSlotManager() {
       const updatedAppointments = [...appointments, { day: dayName, date: newDay.date, slots: newDay.slots }]
       setAppointments(updatedAppointments)
 
-      mutation.mutate({
+      addTimeSlotsMutation.mutate({
         id: data.data._id,
         doctorData: updatedAppointments,
       })
@@ -108,52 +143,26 @@ export default function DoctorTimeSlotManager() {
   }
 
   const deleteDay = (dayIndex) => {
-    delMutaion.mutate({
+    deleteTimeSlotMutation.mutate({
       id: data.data._id,
-      appointmentId: dayIndex
-    });
-    // const updatedAppointments = appointments.filter((_, index) => index !== dayIndex)
-    // setAppointments(updatedAppointments)
+      appointmentId: dayIndex,
+    })
+    const updatedAppointments = appointments.filter((_, index) => index !== dayIndex)
+    setAppointments(updatedAppointments)
   }
 
   const handleUpdateSuccess = () => {
-    getTimeslts()
+    fetchTimeSlots()
     closeUpdateModal()
   }
 
   useEffect(() => {
-    getTimeslts()
+    fetchTimeSlots()
   }, [])
-
-  const getDayNameFromDate = (dateString) => {
-    const date = new Date(dateString)
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-    return days[date.getDay()]
-  }
-
-  const getMaxDate = () => {
-    const today = new Date()
-    const maxDate = new Date(today)
-    maxDate.setDate(today.getDate() + 3)
-    return maxDate.toISOString().split("T")[0]
-  }
-
-  const getTodayDate = () => {
-    return new Date().toISOString().split("T")[0]
-  }
-
-  const isDateAlreadySelected = (dateString) => {
-    return appointments.some((appointment) => appointment.date === dateString)
-  }
-
-  const simplifyDate = (appointmentdate) => {
-    const date = new Date(appointmentdate)
-    return date.toISOString().split("T")[0]
-  }
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Header */}
+      {/* Header Section */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <h1 className="text-3xl font-bold text-gray-900">Doctor Time Slot Manager</h1>
         <Button
@@ -166,6 +175,7 @@ export default function DoctorTimeSlotManager() {
         </Button>
       </div>
 
+      {/* Appointments List */}
       {appointments.map((appointment, dayIndex) => (
         <div key={dayIndex} className="bg-white border border-gray-200 rounded-lg shadow-sm">
           {/* Day Header */}
@@ -219,10 +229,9 @@ export default function DoctorTimeSlotManager() {
                         {slot.startTime} - {slot.endTime}
                       </span>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs ${slot.isBooked
-                          ? "bg-red-100 text-red-800"
-                          : "bg-green-100 text-green-800"
-                          }`}
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          slot.isBooked ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                        }`}
                       >
                         {slot.isBooked ? "Booked" : "Available"}
                       </span>
@@ -235,22 +244,19 @@ export default function DoctorTimeSlotManager() {
         </div>
       ))}
 
-      {/* Modal: Add new day with slots */}
+      {/* Add New Day Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b">
               <h3 className="text-lg font-semibold">Add New Day with Slots</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={closeModal}
-                className="p-1 bg-transparent"
-              >
+              <Button variant="outline" size="sm" onClick={closeModal} className="p-1 bg-transparent">
                 <FiX className="w-4 h-4" />
               </Button>
             </div>
 
+            {/* Modal Content */}
             <div className="p-6 space-y-4">
               {/* Date Picker */}
               <div>
@@ -277,6 +283,7 @@ export default function DoctorTimeSlotManager() {
                 )}
               </div>
 
+              {/* Selected Day Display */}
               {newDay.date && (
                 <div>
                   <label className="block text-sm font-medium mb-2">Selected Day</label>
@@ -296,9 +303,7 @@ export default function DoctorTimeSlotManager() {
                       <input
                         type="time"
                         value={newSlot.startTime}
-                        onChange={(e) =>
-                          setNewSlot({ ...newSlot, startTime: e.target.value })
-                        }
+                        onChange={(e) => setNewSlot({ ...newSlot, startTime: e.target.value })}
                         className="w-full p-2 border border-gray-300 rounded-md text-sm"
                       />
                     </div>
@@ -307,9 +312,7 @@ export default function DoctorTimeSlotManager() {
                       <input
                         type="time"
                         value={newSlot.endTime}
-                        onChange={(e) =>
-                          setNewSlot({ ...newSlot, endTime: e.target.value })
-                        }
+                        onChange={(e) => setNewSlot({ ...newSlot, endTime: e.target.value })}
                         className="w-full p-2 border border-gray-300 rounded-md text-sm"
                       />
                     </div>
@@ -330,15 +333,10 @@ export default function DoctorTimeSlotManager() {
               {/* Added Slots Preview */}
               {newDay.slots.length > 0 && (
                 <div className="border-t pt-4">
-                  <h4 className="text-sm font-medium mb-3">
-                    Added Slots ({newDay.slots.length})
-                  </h4>
+                  <h4 className="text-sm font-medium mb-3">Added Slots ({newDay.slots.length})</h4>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {newDay.slots.map((slot, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-2 bg-gray-50 rounded-md"
-                      >
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
                         <span className="text-sm">
                           {slot.startTime} - {slot.endTime}
                         </span>
@@ -361,24 +359,28 @@ export default function DoctorTimeSlotManager() {
                 <Button
                   onClick={addNewDay}
                   className="flex-1"
-                  disabled={
-                    !newDay.date || newDay.slots.length === 0 || isDateAlreadySelected(newDay.date)
-                  }
+                  disabled={!newDay.date || newDay.slots.length === 0 || isDateAlreadySelected(newDay.date)}
                 >
                   Add Day with Slots
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={closeModal}
-                  className="flex-1 bg-transparent"
-                >
+                <Button variant="outline" onClick={closeModal} className="flex-1 bg-transparent">
                   Cancel
                 </Button>
               </div>
             </div>
           </div>
         </div>
+      )}
 
+      {/* Update Day Modal */}
+      {showUpdateModal && selectedAppointment && (
+        <UpdateDayComponent
+          appointment={selectedAppointment}
+          onClose={closeUpdateModal}
+          onSuccess={handleUpdateSuccess}
+          userId={data?.data?._id}
+          appointments={appointments}
+        />
       )}
     </div>
   )

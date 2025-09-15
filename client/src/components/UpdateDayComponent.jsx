@@ -12,17 +12,17 @@ export default function UpdateDayComponent({ appointment, onClose, onSuccess, us
     day: appointment.day,
     date: appointment.date,
     slots: [...appointment.slots],
-  });
+  })
 
-  console.log(
-    appointment,userId,appointments
-  )
-  const [newSlot, setNewSlot] = useState({ startTime: "", endTime: "" })
+  const [newSlot, setNewSlot] = useState({
+    startTime: "",
+    endTime: "",
+  })
 
   const editDaySlots = useMutation({
     mutationFn: editTimeSlot,
     onSuccess: (data) => {
-        console.log(data);
+      console.log(data)
       toast.success(data.data.message)
       onSuccess()
     },
@@ -88,6 +88,7 @@ export default function UpdateDayComponent({ appointment, onClose, onSuccess, us
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+        {/* Modal Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <h3 className="text-lg font-semibold">Update Day and Slots</h3>
           <Button variant="outline" size="sm" onClick={onClose} className="p-1 bg-transparent">
@@ -95,7 +96,9 @@ export default function UpdateDayComponent({ appointment, onClose, onSuccess, us
           </Button>
         </div>
 
+        {/* Modal Content */}
         <div className="p-6 space-y-4">
+          {/* Date Selection */}
           <div>
             <label className="block text-sm font-medium mb-2">Date</label>
             <input
@@ -116,6 +119,7 @@ export default function UpdateDayComponent({ appointment, onClose, onSuccess, us
             )}
           </div>
 
+          {/* Selected Day Display */}
           {updatedDay.date && (
             <div>
               <label className="block text-sm font-medium mb-2">Selected Day</label>
@@ -125,6 +129,7 @@ export default function UpdateDayComponent({ appointment, onClose, onSuccess, us
             </div>
           )}
 
+          {/* Add New Time Slot Section */}
           <div className="border-t pt-4">
             <h4 className="text-sm font-medium mb-3">Add New Time Slot</h4>
             <div className="space-y-3">
@@ -161,6 +166,7 @@ export default function UpdateDayComponent({ appointment, onClose, onSuccess, us
             </div>
           </div>
 
+          {/* Current Slots Display */}
           {updatedDay.slots.length > 0 && (
             <div className="border-t pt-4">
               <h4 className="text-sm font-medium mb-3">Current Slots ({updatedDay.slots.length})</h4>
@@ -194,6 +200,7 @@ export default function UpdateDayComponent({ appointment, onClose, onSuccess, us
             </div>
           )}
 
+          {/* Action Buttons */}
           <div className="flex gap-3 pt-4">
             <Button
               onClick={handleUpdate}
